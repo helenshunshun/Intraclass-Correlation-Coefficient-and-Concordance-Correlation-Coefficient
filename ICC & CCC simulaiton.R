@@ -25,26 +25,11 @@ iccsum<- function(avg.icc,avg.rankicc,cov.icc,cov.rankicc,low.icc,up.icc,low.ran
 }
 
 #### this function is for making a summary of CCC result based on once simulaiton
-cccsum<- function(avg.ccc,avg.rankccc,cov.ccc,cov.rankccc,low.ccc,up.ccc,low.rankccc,up.rankccc,trueccc){
-  
-  mean.ccc<-mean(avg.ccc) #### this is point estimate
-  mean.rankccc<-mean(avg.rankccc)
-  ## now to get coverage prob
-  prob.ccc<-length(cov.ccc[cov.ccc!=0])/100
-  prob.rankccc<-length(cov.rankccc[cov.rankccc!=0])/100
-  ccc.matrix<-cbind(low.ccc,up.ccc,low.rankccc,up.rankccc)
-  CI.ccc<-apply(ccc.matrix,2,mean)
-  ## get bias
-  bias.ccc<-mean.ccc-trueccc
-  bias.rankccc<-mean.rankccc-trueccc
-  sum.ccc<-c(trueccc, round(c(mean.ccc, bias.ccc, mean.rankccc, bias.rankccc),4), c(prob.ccc, prob.rankccc)*100, round(CI.ccc,4))
-  names(sum.ccc)<-c("trueccc", "esti.ccc","bias.ccc", "esti.rankccc","bias.rankccc", "cov.ccc","cov.rankccc",
-                    "low.ccc","up.ccc","low.rankccc","up.rankccc")
-  return(sum.ccc)
-}
-
+### similar to fucntion cccsum
 ########################
 # make a fucntion to get different types of outlier
+
+######## 3 types of outliers, need 3 ways to choose
 genoutlier<-function(type,outlier,percent,ybi11,ybi12,ybi21,ybi22){
   if(outlier=="reading"){
     out<-c(ybi11,ybi12,ybi21,ybi22)
@@ -129,16 +114,8 @@ row<-function(sig.a,sig.e,rho,trueicc,trueccc,type,exp,percent,outlier){
   cov.icc<-rep(0,100)
   cov.rankicc<-rep(0,100)
   
-  avg.ccc<-rep(0,100)
-  avg.rankccc<-rep(0,100)
-  low.ccc<-rep(0,100)
-  up.ccc<-rep(0,100)
-  low.rankccc<-rep(0,100)
-  up.rankccc<-rep(0,100)
-  cov.ccc<-rep(0,100)
-  cov.rankccc<-rep(0,100)
-  cov.ccc<-rep(0,100)
-  cov.rankccc<-rep(0,100)
+  ### similar to ccc related vectors
+  #..........
   
   for(i in 1:100){
     a<-rnorm(100,0,sig.a)### subject effect
@@ -188,35 +165,11 @@ row<-function(sig.a,sig.e,rho,trueicc,trueccc,type,exp,percent,outlier){
       bij2<-mvrnorm(100,mu,Sigma) 
       
       
-      if(exp==F){
-        ybi11<-a+e[1:100]+bij1[,1]
-        ybi12<-a+e[101:200]+bij2[,1]
-        ybi21<-a+e[201:300]+bij1[,2]
-        ybi22<-a+e[301:400]+bij2[,2]
-      }
-      if(exp==T){
-        ybi11<-exp(a+e[1:100]+bij1[,1])
-        ybi12<-exp(a+e[101:200]+bij2[,1])
-        ybi21<-exp(a+e[201:300]+bij1[,2])
-        ybi22<-exp(a+e[301:400]+bij2[,2])
-      }
-      if(!is.null(outlier)){
-        y2<-genoutlier(type,outlier,percent,ybi11,ybi12,ybi21,ybi22)
-        ybi11<-y2[,1]
-        ybi12<-y2[,2]
-        ybi21<-y2[,3]
-        ybi22<-y2[,4]
-      }
-      
-      icc<-ICC(as.data.frame(cbind(ybi11,ybi12,ybi21,ybi22))) # get icc2
-      rrr<-rank(c(ybi11,ybi12,ybi21,ybi22))
-      ryb<-as.data.frame(cbind(rrr[1:100],rrr[101:200],rrr[201:300],rrr[301:400]))
-      rankicc<-ICC(ryb) # get rank icc2
-      
-      ob1<-c(ybi11,ybi12)
-      ob2<-c(ybi21,ybi22)
-      ccc<-epi.ccc(x=ob1,y=ob2) # get ccc.total
-      rankccc<-epi.ccc(x=rrr[1:200],y=rrr[201:400]) # get rank ccc.total
+      ##  condition of if exponential and if outlier is similar to those of ICC1
+      #............
+      ### same way to get ranked ICC and CCC as well as original ICC and CCC
+      #..............
+     
     }
     
     ############### this is to get some icc vector
@@ -242,12 +195,9 @@ row<-function(sig.a,sig.e,rho,trueicc,trueccc,type,exp,percent,outlier){
     low.rankccc[i]<-rankccc[[1]][2][[1]][1]
     up.rankccc[i]<-rankccc[[1]][3][[1]][1]
     
-    if(trueccc>low.ccc[i] & trueccc<up.ccc[i]){   
-      cov.ccc[i]<-trueccc
-    }
-    if(trueccc>low.rankccc[i] & trueccc<up.rankccc[i]){
-      cov.rankccc[i]<-trueccc
-    }
+   ### if statement to get covarage probability of original and ranked CCC
+   #............
+   
   } ################################################################ ### for loop should end here
   
   ######## this can get result of a row of table
